@@ -1,6 +1,6 @@
-Storm
+# Storm
 
-¿Que es?
+## ¿Que es?
 
 Actualmente vivimos un crecimiento importante en lo que son los sistemas con grandes volúmenes de datos, los cuales están muchas veces desestructurados, o requieren de algún tipo de procesamientos específico para poder resolver un problema, o inferir un nuevo dato a partir de ellos. 
 
@@ -12,7 +12,7 @@ Según su sitio Storm es un sistema de computación en tiempo real distribuido [
 
 Si buscamos por internet también podemos definirlo en función de cómo se compara con Hadoop (en el sitio marca algo como “Storm hace en tiempo real, lo que Hadoop hace en batch”), o con Spark, incluso Kafka. Esto se debe a que muchos problemas de los que atacan este tipo de frameworks son similares, o incluso se complementan para resolver mas problemas complejos.
 
-¿Como lo hace?
+## ¿Como lo hace?
 
 Para entender cómo Storm hace lo que dice debemos entender algunos conceptos como el de Topología.
 
@@ -20,7 +20,7 @@ Una topología representa la lógica de una aplicación distribuida en Storm com
 
 ![alt tag](http://storm.apache.org/images/storm-flow.png)
 
-Topología Storm
+## Topología Storm
 
 Los Spouts representados por canillas son los nodos que producen los datos de la Topología. Sea conectándose a una base de datos, tomando mensajes de una cola de mensajería, u obteniendo datos desde un servicio REST, los Spouts emitirán las tuplas (tipo de dato a través de donde se envían los mensajes dentro de la Topología). Los Spouts pueden ejecutar de forma paralela entre sí y de manera distribuida.
 
@@ -36,13 +36,13 @@ Todo esto no tiene tanto atractivo si no se garantiza al menos el procesamiento 
 
 Storm garantiza esto a través de un mecanismo de confirmación de los mensajes, la definición de timeouts de mensaje y la manipulación de mensajes repetidos, pudiendo configurar todo este comportamiento en la Topología. Queda a criterio del lector profundizar el tema ya que existen muchas implementaciones y mecanismos para manipular el comportamiento de un Stream.
 
-Ejemplo: Contar palabras en Twitter.
+## Ejemplo: Contar palabras de un flujo interminable de fraces
 
 Se han manejado una cantidad importante de conceptos que pueden ser confusos, por lo que aplicaremos los conceptos anteriormente descritos en un ejemplo. En este repositorio encontraremos un ejemplo que pueden ejecutar.
 
 EXPLICAR EJEMPLO
 
-Kafka, Spark, Hadoop, ¿Son lo mismo que Storm?
+## Kafka, Spark, Hadoop, ¿Son lo mismo que Storm?
 
 No, pero están relacionados, tanto Spark como Hadoop realizan paralelismo a nivel de procesamiento de datos, en cambio Storm realiza paralelismo a nivel de ejecución de tareas. Entre Spark y Storm existen de “sabores” que realizan un trabajo muy similar. 
 
@@ -51,8 +51,8 @@ Spark Streaming y Storm Trident son casi productos equivalentes que difieren en 
 Kafka también se confunde con Storm por la similitud entre Stream y una cola distribuida. En verdad una cola distribuida es solo eso, no implica un procesamiento paralelo en sí. Muchas soluciones con Storm utilizan Kafka como fuentes de datos Spout para poder alimentar de manera paralela a la Topología Storm, el cual cuenta con Spouts para conexiones con Kafka y con otros motores de colas de mensajes.
 
 
-Referencias
+## Referencias
 
-[1] http://storm.apache.org/
+[Apache Storm](http://storm.apache.org/)
 
 

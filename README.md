@@ -18,6 +18,7 @@ Para entender cómo Storm hace lo que dice debemos entender algunos conceptos co
 
 Una topología representa la lógica de una aplicación distribuida en Storm como un grafo de Bolts y Spouts conectados a través del agrupamiento de Streams. En la siguiente imagen los Spouts quedan representados por las canillas y los Bolts por las gotas. 
 
+![alt tag](http://storm.apache.org/images/storm-flow.png)
 
 Topología Storm
 

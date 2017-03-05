@@ -1,8 +1,8 @@
-# Storm
+# Storm: Un framework de computacion distribuida orientado a stream de datos.
 
 ## ¿Que es?
 
-Actualmente vivimos un crecimiento importante en lo que son los sistemas con grandes volúmenes de datos, los cuales están muchas veces  des-estructurados, o requieren de algún tipo de procesamientos específico para poder resolver un problema, o inferir un nuevo dato a partir de ellos. 
+Actualmente vivimos un crecimiento importante en lo que son los sistemas con grandes volúmenes de datos, los cuales están muchas veces des-estructurados, o requieren de algún tipo de procesamientos específico para poder resolver un problema, o inferir un nuevo dato a partir de ellos. 
 
 Big Data, Machine Learning, Business Intelligence, entre otros son términos que nos empiezan a resultar más familiares, pero que también hacen que los sistemas que debemos construir tengan requerimientos más complejos, haciendo que las arquitecturas y tecnologías “tradicionales” no sean una solución eficaz para algunos problemas que podemos comenzar a encontrar.
 
@@ -22,7 +22,7 @@ Una topología representa la lógica de una aplicación distribuida en Storm com
 
 ## Topología Storm
 
-Los Spouts representados por canillas son los nodos que producen los datos de la Topología. Sea conectándose a una base de datos, tomando mensajes de una cola de mensajería, u obteniendo datos desde un servicio REST, los Spouts emitirán las tuplas (tipo de dato a través de donde se envían los mensajes dentro de la Topología). Los Spouts pueden ejecutar de forma paralela entre sí y de manera distribuida.
+Los Spouts representados por canillas son los nodos que producen los datos de la Topología. Sea conectándose a una base de datos, tomando mensajes de una cola de mensajería, u obteniendo datos desde un servicio REST. Los Spouts emitirán las tuplas (tipo de dato a través de donde se envían los mensajes dentro de la Topología). Tambien pueden ejecutar de forma paralela entre sí y de manera distribuida.
 
 Los Bolts representados por gotas realizara algún procesamiento sobre las tuplas recibidas, emitiendo nuevas tuplas para la Topología. Estos también pueden ejecutar de forma paralela entre sí y distribuida.
 
@@ -30,7 +30,7 @@ Todos estos nodos del grafo se conectan a través de Streams. Un Stream es una s
 
 Estos Streams pueden agruparse para poder manipular como las tuplas son distribuidas entre las Tasks de un Bolt. Estas Tasks representan los hilos de ejecución de un Bolt dado definido por su nivel de paralelismo en la Topología, por lo que el agrupamiento de Streams define como las tuplas de un Stream viajan de un conjunto de Tasks a otro grupo de Tasks.
 
-Las Topologías ejecutan a través de uno o más Workers los cuales representan un JVM que ejecuta una o más Tasks de la Topología. Storm intentará distribuir las Tasks entre los distintos Workers del sistema de la mejor forma posible según se lo configure.
+Las Topologías ejecutan a través de uno o más Workers los cuales representan una JVM que ejecuta una o más Tasks de la Topología. Storm intentará distribuir las Tasks entre los distintos Workers del sistema de la mejor forma posible según se lo configure.
 
 Todo esto no tiene tanto atractivo si no se garantiza al menos el procesamiento de todos los mensajes de la Topología, considerando un mensaje procesado cuando a recorrido todo el grafo de cómputo de la Topología según se haya definido. 
 
@@ -39,6 +39,25 @@ Storm garantiza esto a través de un mecanismo de confirmación de los mensajes,
 ## Ejemplo: Contar palabras de un flujo interminable de frases
 
 Se han manejado una cantidad importante de conceptos que pueden ser confusos, por lo que aplicaremos los conceptos anteriormente descritos en un ejemplo. En este repositorio encontraremos un ejemplo que pueden ejecutar.
+
+Para ejecutar este ejemplo solo necesitamos Java 1.8 o superior.
+
+Luego de haber clonado el repositorio podemos ejecutar la topologia del ejemplo con el comando "./gradlew run".
+
+```java
+final TopologyBuilder topologyBuilder = new TopologyBuilder();
+topologyBuilder.setSpout("SendPhrasesSpout", new SendPhrasesSpout(), 10);
+topologyBuilder.setBolt("PhraseToWordsBolt", new PhraseToWordsBolt(), 15).shuffleGrouping("SendPhrasesSpout");
+topologyBuilder.setBolt("ToLowerCaseBolt", new ToLowerCaseBolt(), 40).shuffleGrouping("PhraseToWordsBolt");
+topologyBuilder.setBolt("FilterWordsBolt", new FilterWordsBolt(), 20).shuffleGrouping("ToLowerCaseBolt");
+topologyBuilder.setBolt("WordCountBolt", new WordCountBolt(), 10).
+        fieldsGrouping("FilterWordsBolt", new Fields("word"));
+
+
+final Config config = new Config();
+final LocalCluster stormCluster = new LocalCluster();
+stormCluster.submitTopology("storm-example", config, topologyBuilder.createTopology());
+```   
 
 EXPLICAR EJEMPLO
 

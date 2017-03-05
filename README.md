@@ -2,7 +2,7 @@
 
 ## ¿Que es?
 
-Actualmente vivimos un crecimiento importante en lo que son los sistemas con grandes volúmenes de datos, los cuales están muchas veces desestructurados, o requieren de algún tipo de procesamientos específico para poder resolver un problema, o inferir un nuevo dato a partir de ellos. 
+Actualmente vivimos un crecimiento importante en lo que son los sistemas con grandes volúmenes de datos, los cuales están muchas veces  des-estructurados, o requieren de algún tipo de procesamientos específico para poder resolver un problema, o inferir un nuevo dato a partir de ellos. 
 
 Big Data, Machine Learning, Business Intelligence, entre otros son términos que nos empiezan a resultar más familiares, pero que también hacen que los sistemas que debemos construir tengan requerimientos más complejos, haciendo que las arquitecturas y tecnologías “tradicionales” no sean una solución eficaz para algunos problemas que podemos comenzar a encontrar.
 
@@ -36,7 +36,7 @@ Todo esto no tiene tanto atractivo si no se garantiza al menos el procesamiento 
 
 Storm garantiza esto a través de un mecanismo de confirmación de los mensajes, la definición de timeouts de mensaje y la manipulación de mensajes repetidos, pudiendo configurar todo este comportamiento en la Topología. Queda a criterio del lector profundizar el tema ya que existen muchas implementaciones y mecanismos para manipular el comportamiento de un Stream.
 
-## Ejemplo: Contar palabras de un flujo interminable de fraces
+## Ejemplo: Contar palabras de un flujo interminable de frases
 
 Se han manejado una cantidad importante de conceptos que pueden ser confusos, por lo que aplicaremos los conceptos anteriormente descritos en un ejemplo. En este repositorio encontraremos un ejemplo que pueden ejecutar.
 
@@ -53,6 +53,6 @@ Kafka también se confunde con Storm por la similitud entre Stream y una cola di
 
 ## Referencias
 
-[Apache Storm](http://storm.apache.org/)
+1 * [Apache Storm](http://storm.apache.org/)
 
 

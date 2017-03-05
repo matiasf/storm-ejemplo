@@ -44,6 +44,10 @@ Para ejecutar este ejemplo solo necesitamos Java 1.8 o superior.
 
 Luego de haber clonado el repositorio podemos ejecutar la topologia del ejemplo con el comando "./gradlew run".
 
+Antes de ejecutar entendamos un poco que va a realizar el ejemplo. En el ejemplo tenemos un Spout que genera frases simulando un flujo interminable de frases y luego una serie de Bolts que procesan dichas frases para contar las palabras de interes que se van produciendo en el flujo.
+
+Para realizar esto se crea un Spout que es el encargado de emitir las frases (SendPhrasesSpout), un Bolt que se encarga de tomar un frase y partirla es sus palabras (PhraseToWordsBolt), un Bolt que se encarga de normalizar las palabras pasandolas todas a minusculas (ToLowerCaseBolt), otro Bolt que quita las palabas que no nos interesan contar (FilterWordsBolt) y un Bolt final que cuenta cada palabra (WordCountBolt). Esta topologia queda definida en la clase main StormExampleMain como se muestra a continuacion.
+
 ```java
 final TopologyBuilder topologyBuilder = new TopologyBuilder();
 topologyBuilder.setSpout("SendPhrasesSpout", new SendPhrasesSpout(), 10);
@@ -52,18 +56,82 @@ topologyBuilder.setBolt("ToLowerCaseBolt", new ToLowerCaseBolt(), 40).shuffleGro
 topologyBuilder.setBolt("FilterWordsBolt", new FilterWordsBolt(), 20).shuffleGrouping("ToLowerCaseBolt");
 topologyBuilder.setBolt("WordCountBolt", new WordCountBolt(), 10).
         fieldsGrouping("FilterWordsBolt", new Fields("word"));
+```
 
+En este ejemplo se puede ver la definicion de los Spouts y Bolts y el nivel de paralelimos definido en cada uno (cantidad de Tasks que lo ejecutan).
 
-final Config config = new Config();
-final LocalCluster stormCluster = new LocalCluster();
-stormCluster.submitTopology("storm-example", config, topologyBuilder.createTopology());
-```   
+Como se ve en el codigo de ejemplo cada Bolt se suscribe a un Spout o un Bolt para recibir las tuplas que estos emiten. En el codigo se ve como todos se conectan a a travez de shuffleGrouping, salvo el ultimo que se conecta a travez de fieldGrouping donde ademas se especifica un campo word, esto refiere al agrupamiento de Streams. En los primeros casos no es importante para el procesamiento a que Task del Bolt va la tupla, pero al tener que contar las palabras necesitamos que una misma palabra valla a una misma task, para no tener un count en una task y otro count en otra task.
 
-EXPLICAR EJEMPLO
+Con el codigo anterior queda totalmente definida la topologia, pero veamos ahora como es la definicion de un Spout
+
+```java
+public class SendPhrasesSpout extends BaseRichSpout {
+
+    private static final String[] phrases = {"Hola como estas", "Hola como te va", "Este es otro ejemplo",
+            "Ejemplo es lo que sobra", "Estas en el horno", "El horno de mi mama", "Estas fraces son un ejemplo de encaje",
+            "Encaje tiene el vestido de mi mama", "Mama es mal", "Mama es buena", "Vamos los pibes", "Pibes era un perfume",
+            "El perfume un gran libro es", "Ahora le pinto Yoda"};
+
+    private SpoutOutputCollector collector;
+
+    @Override
+    public void open(final Map conf, final TopologyContext context, final SpoutOutputCollector collector) {
+        this.collector = collector;
+    }
+
+    @Override
+    public void nextTuple() {
+        int rnd = new Random().nextInt(phrases.length);
+        collector.emit(Collections.singletonList(phrases[rnd]));
+    }
+
+    @Override
+    public void declareOutputFields(final OutputFieldsDeclarer declarer) {
+        declarer.declare(new Fields("phrase"));
+    }
+
+}
+```
+
+En este caso implementamos el formato tipico de Spouts a travez del BaseRichSpout. En este caso solo tenemos que implementar tres metodos, el open para la definicion del Spout, el nextTuple el cual se ejecuta cada tanto tiempo para emitir un valor, y el declareOutputFields el cual define el formato de las tuplas de salida. Solo con estas definiciones ta tenemos un Spout.
+
+La definicion de un Bolt no es muy diferente como queda mostrado en el siguiente ejemplo.
+
+```java
+public class PhraseToWordsBolt extends BaseRichBolt {
+
+    private OutputCollector collector;
+
+    @Override
+    public void prepare(final Map stormConf, final TopologyContext context, final OutputCollector collector) {
+        this.collector = collector;
+    }
+
+    @Override
+    public void execute(final Tuple input) {
+        final String phrase = input.getStringByField("phrase");
+        Arrays.stream(phrase.split(" ")).forEach(w -> collector.emit(Collections.singletonList(w)));
+    }
+
+    @Override
+    public void declareOutputFields(final OutputFieldsDeclarer declarer) {
+        declarer.declare(new Fields("word"));
+    }
+
+}
+```
+
+La unica diferencia importante entre un Bolt y un Spout es que el primero define un execute en vez de un nextTuple, y este recibe una tumpla en vez de crearla como se ven en el ejemplo.
+
+Tanto en el Spout como en el Bolt para emitir una tupla se ejecuta la funcion emit.
+
+Pueden ver el resto de las definiciones de la topologia para entender mejor como funciona. Al ejecutar el ejemplo tal cual esta, deben de tener como resultado 10 archivos con el numero de Task y las palabras contadas por cada una, y una palabra no deberia aparecer en distintas Tasks. El numero 10 es debido a que el ultimo Bolt tiene 10 en el paralelismo, al aumentar o disminuir este numero cambiara la cantidad de archivos en ese valor.
+
+Tener en cuenta al ejecutar el ejemplo que una topologia no termina, por lo que va a quedar ejecutando interminablementa hasta que la detengamos.
 
 ## Kafka, Spark, Hadoop, ¿Son lo mismo que Storm?
 
-No, pero están relacionados, tanto Spark como Hadoop realizan paralelismo a nivel de procesamiento de datos, en cambio Storm realiza paralelismo a nivel de ejecución de tareas. Entre Spark y Storm existen de “sabores” que realizan un trabajo muy similar. 
+No, pero están relacionados, tanto Spark como Hadoop realizan paralelismo a nivel de procesamiento de datos, en cambio Storm realiza paralelismo a nivel de ejecución de tareas. Entre Spark y Storm existen “sabores” que realizan un trabajo muy similar. 
 
 Spark Streaming y Storm Trident son casi productos equivalentes que difieren en el enfoque, Spark Streaming le da las posibilidad a este de construir aplicaciones para procesar Streams de datos, creando micro transacciones de batches Spark. En tanto Storm Trident ayuda a la ejecución de Streams transaccionales muy parecidos a los Streams de Spark.
 
